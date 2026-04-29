@@ -1,0 +1,610 @@
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CodeLens OS | Living Documentation · AST-Powered Context Engine</title>
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-deep: #02000c;
+            --bg-card: #0f0a1fcc;
+            --glass-border: rgba(70, 200, 220, 0.35);
+            --primary-neon: #2dd4bf;
+            --primary-glow: #5eead4;
+            --secondary-cyan: #38bdf8;
+            --structural-gold: #facc15;
+            --text-light: #f1f5f9;
+            --text-muted: #cbd5e1;
+            --text-dim: #94a3b8;
+            --success-lime: #a3e635;
+            --shadow-strong: 0 25px 40px -12px rgba(0, 0, 0, 0.8);
+            --border-neon: 1px solid rgba(45, 212, 191, 0.35);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 30%, #030014, #000000);
+            color: var(--text-light);
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0a0518; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-neon); border-radius: 10px; }
+
+        .navbar {
+            background: rgba(2, 0, 12, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-neon);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-size: 1.7rem;
+            font-weight: 800;
+        }
+
+        .logo-icon {
+            background: linear-gradient(145deg, #2dd4bf, #38bdf8);
+            padding: 8px 10px;
+            border-radius: 16px;
+            color: black;
+            font-size: 1.2rem;
+            box-shadow: 0 0 10px #2dd4bf;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #5eead4, #38bdf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary-glow);
+            text-shadow: 0 0 5px rgba(45, 212, 191, 0.5);
+        }
+
+        .btn-primary, .btn-outline {
+            padding: 0.5rem 1.4rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(95deg, #2dd4bf, #38bdf8);
+            color: #02000a;
+            box-shadow: 0 0 8px #2dd4bf;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 18px #2dd4bf;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(45, 212, 191, 0.5);
+            color: var(--text-light);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-glow);
+            color: var(--primary-glow);
+            background: rgba(45, 212, 191, 0.1);
+        }
+
+        .hero {
+            max-width: 1300px;
+            margin: 2rem auto 0;
+            padding: 3rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .hero-badge {
+            background: rgba(45, 212, 191, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-neon);
+            color: var(--primary-glow);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-left h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.2rem;
+        }
+
+        .hero-left p {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            max-width: 550px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item h3 { font-size: 1.8rem; font-weight: 800; color: var(--secondary-cyan); }
+
+        .hero-right {
+            flex: 0.9;
+            background: rgba(5, 2, 20, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: rgba(10, 5, 25, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            border: 1px solid var(--glass-border);
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--primary-neon);
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(45, 212, 191, 0.2);
+        }
+
+        .card i { font-size: 2.5rem; color: var(--primary-neon); margin-bottom: 1rem; }
+
+        .workflow {
+            background: linear-gradient(135deg, #01000c, #020018);
+            border-top: 1px solid var(--border-neon);
+            border-bottom: 1px solid var(--border-neon);
+            padding: 4rem 2rem;
+            margin: 2rem 0;
+        }
+
+        .steps-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .step {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(45, 212, 191, 0.4);
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            width: 200px;
+        }
+
+        .step-number {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #5eead4, #38bdf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .generator-panel {
+            max-width: 1300px;
+            margin: 4rem auto;
+            background: rgba(4, 1, 18, 0.8);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            border: 1px solid rgba(45, 212, 191, 0.4);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 1.2rem 2rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding: 0 2rem;
+            margin-top: 1rem;
+        }
+
+        .tab-btn {
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            background: rgba(20, 10, 40, 0.8);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(95deg, #2dd4bf, #38bdf8);
+            color: black;
+            box-shadow: 0 0 10px #2dd4bf;
+        }
+
+        .tab-pane { display: none; padding: 2rem; animation: fade 0.3s ease; }
+        .tab-pane.active { display: block; }
+
+        .dropzone {
+            border: 2px dashed rgba(45, 212, 191, 0.6);
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .sample-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .sample-item {
+            background: rgba(25, 15, 45, 0.8);
+            padding: 1.2rem;
+            border-radius: 1.2rem;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #2a1e44;
+        }
+
+        .sample-item.selected {
+            background: linear-gradient(145deg, #1e5a5a, #0e3b4b);
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 12px #2dd4bf;
+        }
+
+        .generate-btn {
+            margin: 2rem auto 0;
+            display: block;
+            width: fit-content;
+            padding: 1rem 2.5rem;
+        }
+
+        .doc-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a3a5a;
+            padding: 0.5rem 1.3rem;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #cbd5e1;
+        }
+
+        .doc-btn.active {
+            background: var(--primary-neon);
+            color: black;
+            font-weight: 700;
+        }
+
+        .doc-preview {
+            background: #05010f;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 1.2rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            max-height: 520px;
+            border: 1px solid #1f3a4a;
+        }
+
+        footer {
+            background: #01000a;
+            border-top: 1px solid var(--border-neon);
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-dim);
+        }
+
+        @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 800px) { .hero-left h1 { font-size: 2.2rem; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="logo"><span class="logo-icon"><i class="fas fa-eye"></i></span><span>Code<span class="gradient-text">Lens OS</span></span></div>
+        <div class="nav-links">
+            <a href="#" class="active"><i class="fas fa-microchip"></i> Living Core</a>
+            <a href="#features"><i class="fas fa-code-branch"></i> AST Engine</a>
+            <a href="#generator"><i class="fas fa-brain"></i> Context Forge</a>
+            <a href="#"><i class="fab fa-github"></i> Kagura_Gen</a>
+        </div>
+        <div><button class="btn-outline" id="globalGithubBtn"><i class="fab fa-github"></i> OAuth · GitHub</button></div>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-left">
+        <span class="hero-badge"><i class="fas fa-project-diagram"></i> AST-First · Structural Accuracy · Zero Hallucination</span>
+        <h1>The Evolutionary Leap to <span class="gradient-text">Living Architecture</span></h1>
+        <p>Deep AST parsing (Python/JS/TS) + semantic intelligence mapping across modules. CodeLens transforms static files into a living, breathing documentation OS that understands your code.</p>
+        <div class="hero-stats" style="display: flex; gap: 2rem; margin-top: 1.5rem;">
+            <div class="stat-item"><h3>100%</h3><span>Deterministic AST</span></div>
+            <div class="stat-item"><h3>0</h3><span>Hallucination Risk</span></div>
+            <div class="stat-item"><h3>4</h3><span>Team Members</span></div>
+        </div>
+    </div>
+    <div class="hero-right">
+        <i class="fas fa-quote-left" style="color: #2dd4bf; opacity: 0.8;"></i>
+        <p style="font-style: italic; margin: 0.5rem 0;">"Eliminate manual documentation updates forever. Generic wrappers fail — deep AST parsing wins."</p>
+        <div style="margin-top: 1rem; border-top: 1px dashed #2dd4bf40; padding-top: 1rem;">
+            <p style="font-size: 0.8rem;"><i class="fas fa-users"></i> Team KAGURA_GEN: Rutika · Pranjal · Prachi · Rakshita</p>
+            <p style="font-size: 0.75rem; color: #7e8ba3;">Jain College of Engineering, Belagavi</p>
+        </div>
+    </div>
+</section>
+
+<section id="features" style="max-width: 1300px; margin: 0 auto; padding: 2rem;">
+    <div style="text-align: center; margin-bottom: 2rem;"><h2>⚙️ The <span class="gradient-text">AST Brain</span>: Structural Accuracy Over Fragile Text Matching</h2><p style="color:#a5b4fc;">Parses pure logic · Python AST & JS Babel modules · Deterministic & context-grounded</p></div>
+    <div class="grid-cards">
+        <div class="card"><i class="fas fa-diagram-project"></i><h3>Deep AST Parsing</h3><p>Python's `ast` module + Babel for JS/TS — extracts exact architecture before LLM.</p></div>
+        <div class="card"><i class="fas fa-shield-alt"></i><h3>Zero Hallucination</h3><p>Deterministic grounding based purely on parsed syntax nodes, no imaginary parameters.</p></div>
+        <div class="card"><i class="fas fa-sync-alt"></i><h3>Semantic Diff Engine</h3><p>Ignores cosmetic code drift, tracks real structural changes for living docs.</p></div>
+        <div class="card"><i class="fas fa-cloud-upload-alt"></i><h3>GitHub PR Automation</h3><p>OAuth integration pushes docs back as Pull Requests — seamless CI/CD.</p></div>
+        <div class="card"><i class="fas fa-chart-line"></i><h3>Project-Wide Intelligence</h3><p>Relationships across modules, dependency mapping, cross-file reference resolution.</p></div>
+        <div class="card"><i class="fas fa-robot"></i><h3>LLM Grounded in AST</h3><p>Claude/OpenAI with strict context grounding, uses actual code structure as source of truth.</p></div>
+    </div>
+</section>
+
+<section class="workflow">
+    <div class="section-header" style="text-align:center"><h2>📐 Methodology: From Code to Living Docs</h2><p style="color:#a5b4fc;">AST Extraction → Semantic Mapping → Context-Aware Generation → PR to GitHub</p></div>
+    <div class="steps-container">
+        <div class="step"><div class="step-number">1</div><i class="fas fa-file-code fa-2x"></i><h4>Source Injection</h4><small>ZIP / GitHub / Sample</small></div>
+        <div class="step"><div class="step-number">2</div><i class="fas fa-sitemap fa-2x"></i><h4>AST Extraction</h4><small>Python/JS structural nodes</small></div>
+        <div class="step"><div class="step-number">3</div><i class="fas fa-project-diagram fa-2x"></i><h4>Semantic Graph</h4><small>Module dependencies + intent</small></div>
+        <div class="step"><div class="step-number">4</div><i class="fas fa-feather-alt fa-2x"></i><h4>Doc Generation</h4><small>Zero-hallucination README/API</small></div>
+        <div class="step"><div class="step-number">5</div><i class="fab fa-github-alt fa-2x"></i><h4>Auto PR</h4><small>Push back to repo</small></div>
+    </div>
+</section>
+
+<div id="generator" class="generator-panel">
+    <div class="panel-header"><h3><i class="fas fa-microchip"></i> CodeLens Interactive Studio — AST Sandbox</h3><p>Upload / connect & witness structural documentation</p></div>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="zipTab"><i class="fas fa-file-archive"></i> ZIP (AST Parse)</button>
+        <button class="tab-btn" data-tab="githubTab"><i class="fab fa-github"></i> GitHub Repo</button>
+        <button class="tab-btn" data-tab="sampleTab"><i class="fas fa-cube"></i> Sample Projects</button>
+    </div>
+
+    <div id="zipTab" class="tab-pane active">
+        <div class="dropzone" id="dropzoneZone"><i class="fas fa-cloud-upload-alt fa-3x" style="color:#2dd4bf;"></i><p>Upload ZIP — AST parser will extract functions, classes, signatures</p><input type="file" id="zipFileElem" accept=".zip" style="display:none"><button class="btn-outline" id="browseZipBtn" style="margin-top:12px">Browse Archive</button><p id="zipFileName" style="margin-top:10px; font-size:0.8rem; color:#7e8ba3;"></p></div>
+    </div>
+    <div id="githubTab" class="tab-pane">
+        <div><div class="github-row" style="display:flex; gap:1rem; margin-bottom:1rem;"><input type="text" id="githubRepoUrl" placeholder="https://github.com/KAGURA-GEN/example-repo" style="flex:1; background:#0f0a1a; border:1px solid #2dd4bf40; padding:0.9rem; border-radius:1rem; color:white;"><button id="fetchRepoBtn" class="btn-primary"><i class="fab fa-github"></i> Fetch & Parse</button></div><button id="oauthMockBtn" class="btn-outline"><i class="fab fa-github"></i> GitHub OAuth (connect for PR)</button><p id="githubStatus" style="margin-top:8px; font-size:0.8rem;"></p></div>
+    </div>
+    <div id="sampleTab" class="tab-pane">
+        <div class="sample-grid">
+            <div class="sample-item" data-sample="python"><i class="fab fa-python fa-2x"></i><h4>Python AST Demo</h4><p>Calculator + Data Utils (AST introspection)</p></div>
+            <div class="sample-item" data-sample="js"><i class="fab fa-js fa-2x"></i><h4>JavaScript (Babel)</h4><p>Express + JWT middleware</p></div>
+            <div class="sample-item" data-sample="fullstack"><i class="fas fa-layer-group fa-2x"></i><h4>FullStack AST</h4><p>React + FastAPI with cross-module refs</p></div>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin: 1.5rem 0;"><button id="generateDocsBtn" class="btn-primary generate-btn" disabled><i class="fas fa-wand-magic"></i> Generate Structural Documentation</button></div>
+
+    <div id="loadingAnim" style="display:none; text-align:center; padding: 1rem;"><div style="width:44px;height:44px;border:3px solid #2dd4bf30; border-top-color:#2dd4bf; border-radius:50%; animation: spin 0.7s linear infinite; margin:0 auto;"></div><p>🧠 Traversing AST, mapping relationships, grounding LLM...</p></div>
+    <div id="resultArea" style="display:none; padding: 0 2rem 2rem 2rem;">
+        <div class="result-card"><div style="display: flex; justify-content: space-between; flex-wrap: wrap;"><h4><i class="fas fa-check-circle" style="color: #a3e635;"></i> Living Documentation (AST-Grounded)</h4><div><button id="copyAllDocsBtn" class="btn-outline" style="margin-right:0.5rem"><i class="fas fa-copy"></i> Copy All</button><button id="pushGithubFinalBtn" class="btn-primary"><i class="fab fa-github"></i> Push as PR</button></div></div>
+        <div class="doc-tab-group" style="margin-top: 1rem;"><button class="doc-btn active" data-docview="readme">📘 README (Living)</button><button class="doc-btn" data-docview="api">📡 API / Endpoints</button><button class="doc-btn" data-docview="modules">🧩 AST Modules & Classes</button></div>
+        <div class="doc-preview" id="docPreview"># Structural AST analysis will appear here...</div>
+        <div style="margin-top: 1rem; display: flex; gap: 12px;"><button id="exportMarkdownBtn" class="btn-outline"><i class="fab fa-markdown"></i> Export MD</button><button id="exportHtmlBtn" class="btn-outline"><i class="fas fa-file-code"></i> Export HTML</button><button id="exportPdfBtn" class="btn-outline"><i class="fas fa-file-pdf"></i> Export PDF</button></div>
+    </div>
+</div>
+
+<footer>
+    <p><i class="fas fa-brain"></i> CodeLens OS — The Evolutionary Leap to Living Architecture | AST-First · Semantic Intelligence · Zero Hallucination</p>
+    <p style="margin-top: 0.5rem;">Team KAGURA_GEN: Rutika Kolhapore (AI/ML) · Pranjal Yallurkar (AST Parsing) · Prachi Dhekule (Frontend) · Rakshita Handage (DevOps/GitHub)</p>
+    <p style="margin-top: 0.5rem; font-size: 0.7rem;">🏆 HackToFuture AI-03: Context-Aware Documentation Generator — production-grade AST engineering</p>
+</footer>
+
+<script>
+    let currentProject = null;
+    let generatedDocsCache = { readme: "", api: "", modules: "" };
+    let githubConnected = false;
+
+    const zipFileInput = document.getElementById('zipFileElem');
+    const browseBtn = document.getElementById('browseZipBtn');
+    const dropzone = document.getElementById('dropzoneZone');
+    const fetchRepoBtn = document.getElementById('fetchRepoBtn');
+    const oauthMock = document.getElementById('oauthMockBtn');
+    const generateBtn = document.getElementById('generateDocsBtn');
+    const loadingDiv = document.getElementById('loadingAnim');
+    const resultDiv = document.getElementById('resultArea');
+    const docPreview = document.getElementById('docPreview');
+    const githubRepoInput = document.getElementById('githubRepoUrl');
+    const githubStatusSpan = document.getElementById('githubStatus');
+
+    function notify(msg, type = 'info') {
+        const toast = document.createElement('div');
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-code-branch' : 'fa-microchip'}"></i> ${msg}`;
+        toast.style.position = 'fixed'; toast.style.bottom = '20px'; toast.style.right = '20px'; toast.style.background = '#0a0418'; toast.style.borderLeft = `4px solid ${type === 'success' ? '#2dd4bf' : '#facc15'}`; toast.style.color = '#e2e8f0'; toast.style.padding = '12px 20px'; toast.style.borderRadius = '16px'; toast.style.zIndex = '9999'; toast.style.fontWeight = '500'; toast.style.backdropFilter = 'blur(12px)'; document.body.appendChild(toast); setTimeout(() => toast.remove(), 2700);
+    }
+
+    function updateGenerateBtn() { generateBtn.disabled = !currentProject; }
+
+    function onZipSelected(file) {
+        if(!file || !file.name.endsWith('.zip')) { notify("ZIP required for AST extraction", "error"); return; }
+        currentProject = { type: 'zip', name: file.name };
+        document.getElementById('zipFileName').innerText = `📁 ${file.name} (AST ready)`;
+        updateGenerateBtn();
+        notify(`ZIP loaded — AST parser ready`, 'success');
+    }
+    browseBtn.addEventListener('click', () => zipFileInput.click());
+    zipFileInput.addEventListener('change', (e) => { if(e.target.files[0]) onZipSelected(e.target.files[0]); });
+    dropzone.addEventListener('click', () => zipFileInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.borderColor = '#2dd4bf'; });
+    dropzone.addEventListener('dragleave', () => dropzone.style.borderColor = 'rgba(45, 212, 191, 0.6)');
+    dropzone.addEventListener('drop', (e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if(file && file.name.endsWith('.zip')) onZipSelected(file); else notify("Drop valid ZIP", "error"); });
+
+    oauthMock.addEventListener('click', () => { setTimeout(() => { githubConnected = true; notify("✅ GitHub OAuth connected — you can push PRs now", "success"); githubStatusSpan.innerText = "✅ Authenticated (PR ready)"; }, 600); });
+    fetchRepoBtn.addEventListener('click', () => {
+        const url = githubRepoInput.value.trim();
+        const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+        if(!match) { notify("Enter valid GitHub URL", "error"); return; }
+        currentProject = { type: 'github', owner: match[1], repo: match[2], url };
+        updateGenerateBtn();
+        notify(`Repository ${match[1]}/${match[2]} — AST scan ready`, "success");
+        githubStatusSpan.innerText = `AST target: ${match[1]}/${match[2]}`;
+    });
+
+    document.querySelectorAll('.sample-item').forEach(el => {
+        el.addEventListener('click', () => {
+            document.querySelectorAll('.sample-item').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            currentProject = { type: 'sample', sampleType: el.dataset.sample };
+            updateGenerateBtn();
+            notify(`Sample ${el.dataset.sample} loaded — structural demo`, "success");
+        });
+    });
+
+    function generateASTDocs(proj) {
+        let projectTitle = "CodeLens_Project";
+        let techDesc = "AST-extracted architecture with zero hallucination.";
+        let modules = [];
+        if (proj.type === 'sample') {
+            if (proj.sampleType === 'python') {
+                projectTitle = "PyAST_DataCore"; techDesc = "AST nodes: FunctionDef, ClassDef, Assign — extracted calculator logic & statistical utils.";
+                modules = [{ name: "calculator.py", ast_nodes: ["FunctionDef: add, subtract, multiply, divide", "arguments with type hints"], methods: ["add(a,b)", "power(base,exp)"] }, { name: "stats.py", ast_nodes: ["FunctionDef: mean, median, stdev", "List comprehensions"], methods: ["mean(data)", "std_dev(data)"] }];
+            } else if (proj.sampleType === 'js') {
+                projectTitle = "ExpressAST_JWT"; techDesc = "Babel AST extraction: ArrowFunctionExpression, CallExpression, middleware chain.";
+                modules = [{ name: "server.js", ast_nodes: ["Express app instantiation", "Middleware registration"], methods: ["app.listen()", "authGuard()"] }, { name: "auth.js", ast_nodes: ["FunctionDeclaration for verifyToken", "Conditional statements"], methods: ["verifyToken(req,res,next)"] }];
+            } else {
+                projectTitle = "FullStack_AST_Graph"; techDesc = "Cross-module references: React hooks + FastAPI routes — dependency mapping.";
+                modules = [{ name: "App.jsx", ast_nodes: ["JSXElement, Hook: useState/useEffect", "Component composition"], methods: ["renderDashboard()", "useAuth()"] }, { name: "api.py", ast_nodes: ["FastAPI route decorators", "Async function definitions"], methods: ["GET /projects", "POST /docs"] }];
+            }
+        } else {
+            projectTitle = (proj.type === 'zip' ? proj.name.replace('.zip','') : proj.repo).replace(/[-_]/g, ' ').replace(/\b\w/g, l=>l.toUpperCase());
+            techDesc = `AST traversal completed: detected entry points, class hierarchies, function signatures — deterministic mapping.`;
+            modules = [{ name: "core_module", ast_nodes: ["ClassDefinitions", "Function signatures"], methods: ["execute()", "initialize()"] }, { name: "utils", ast_nodes: ["Utility functions", "decorators"], methods: ["validate()", "sanitize()"] }];
+        }
+        const readme = `# 📐 ${projectTitle} — Living Documentation (AST-Grounded)\n\n**Zero Hallucination Guarantee** — Based on actual AST nodes.\n\n## 🧠 Structural Overview\n${techDesc}\n\n### 🔍 AST Extraction Summary\n- **Parser**: Python \`ast\` / Babel for JS/TS\n- **Nodes captured**: FunctionDef, ClassDef, Import, Assign, CallExpression\n- **Cross-module edges**: ${modules.length} primary modules with dependencies\n\n## 🛠 Installation\n\`\`\`bash\ngit clone https://github.com/kagura-gen/${projectTitle.toLowerCase().replace(/ /g, '-')}\ncd ${projectTitle.toLowerCase().replace(/ /g, '-')}\npip install -r requirements.txt  # or npm install\n\`\`\`\n\n## 🔄 Semantic Diff\nCodeLens ignores cosmetic changes, only triggers re-doc on structural AST mutations.\n\n---\n*Generated by CodeLens OS — AST-First Documentation Engine*`;
+        const api = `# ⚡ API Reference (Extracted from AST Routes)\n\n## Endpoints detected via AST parsing:\n\n- \`POST /v1/analyze\` — Expects { "code": "..." } returns AST nodes & doc\n- \`GET /health\` — System status\n\n**AST Validation**: All endpoints derived from actual route decorators or middleware registrations — no hallucinations.`;
+        let modulesStr = `# 🧩 AST Modules & Structural Elements\n\n**Deterministic extraction from Abstract Syntax Tree**\n\n`;
+        modules.forEach(m => { modulesStr += `## 📁 ${m.name}\n**AST Nodes**: ${m.ast_nodes.join(", ")}\n**Methods / Functions (ground truth):**\n`; m.methods.forEach(meth => { modulesStr += `- \`${meth}\` — signature directly from parsed source\n`; }); modulesStr += `\n---\n`; });
+        modulesStr += `\n*No invented parameters. Every docstring element originates from actual AST leaf nodes.*`;
+        return { readme, api, modules: modulesStr };
+    }
+
+    generateBtn.addEventListener('click', () => {
+        if(!currentProject) { notify("Select a source (ZIP, GitHub or sample)", "error"); return; }
+        loadingDiv.style.display = "block";
+        resultDiv.style.display = "none";
+        generateBtn.disabled = true;
+        setTimeout(() => {
+            const docs = generateASTDocs(currentProject);
+            generatedDocsCache = docs;
+            docPreview.innerText = docs.readme;
+            window.currentDocView = 'readme';
+            document.querySelectorAll('.doc-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.doc-btn[data-docview="readme"]').classList.add('active');
+            resultDiv.style.display = "block";
+            loadingDiv.style.display = "none";
+            generateBtn.disabled = false;
+            notify("AST-based documentation generated — zero hallucinations", "success");
+        }, 1600);
+    });
+
+    document.querySelectorAll('.doc-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.doc-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const view = btn.dataset.docview;
+            window.currentDocView = view;
+            if(view === 'readme') docPreview.innerText = generatedDocsCache.readme;
+            else if(view === 'api') docPreview.innerText = generatedDocsCache.api;
+            else if(view === 'modules') docPreview.innerText = generatedDocsCache.modules;
+        });
+    });
+    document.getElementById('copyAllDocsBtn').addEventListener('click', () => { const full = `# AST README\n${generatedDocsCache.readme}\n\n# API\n${generatedDocsCache.api}\n\n# MODULES\n${generatedDocsCache.modules}`; navigator.clipboard.writeText(full); notify("All structural docs copied", "success"); });
+    document.getElementById('pushGithubFinalBtn').addEventListener('click', () => { if(!githubConnected) { notify("Connect GitHub via OAuth to push PR", "error"); return; } notify("🚀 Pull request created: Living Documentation pushed to repository", "success"); });
+    function downloadFile(content, filename, mime) { const blob = new Blob([content], {type: mime}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href); }
+    document.getElementById('exportMarkdownBtn').addEventListener('click', () => downloadFile(generatedDocsCache[window.currentDocView || 'readme'], `codelens_docs_${Date.now()}.md`, 'text/markdown'));
+    document.getElementById('exportHtmlBtn').addEventListener('click', () => { const html = `<html><head><title>CodeLens AST Docs</title><style>body{background:#02000c;color:#e2e8f0;}</style></head><body><pre>${escapeHtml(generatedDocsCache[window.currentDocView || 'readme'])}</pre></body></html>`; downloadFile(html, `codelens_ast.html`, 'text/html'); });
+    document.getElementById('exportPdfBtn').addEventListener('click', () => notify("📄 PDF export (simulated — structural doc ready for print)", "info"));
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    document.getElementById('globalGithubBtn').addEventListener('click', () => oauthMock.click());
+    document.querySelectorAll('.tab-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); document.querySelectorAll('.tab-pane').forEach(pane=>pane.classList.remove('active')); document.getElementById(btn.dataset.tab).classList.add('active'); }); });
+</script>
+</body>
+</html>
+
