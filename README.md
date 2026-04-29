@@ -1,3 +1,5 @@
+# CodeLens
+
 # 🧠 Context-Aware Documentation Generator
 
 An intelligent system that **automatically generates high-quality, modular, and context-aware documentation** by deeply analyzing a project's codebase.
